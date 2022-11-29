@@ -1,0 +1,10 @@
+{
+	"url": "mattermost.example.com",
+    "login_id": "BOT",
+    "password": "PASSWORD",
+    "scheme": "https",
+    "port": 443,
+    "basepath": "/api/v4",
+    "verify": false, 
+    "mfa_token": "YourMFAToken"
+}
