@@ -1,2 +1,4 @@
-mattermost_config.json
+config.json
+.cache
+file
 out.log

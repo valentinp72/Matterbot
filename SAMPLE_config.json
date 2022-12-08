@@ -1,0 +1,16 @@
+{
+	"mattermost": {
+		"url": "MATTERMOST_URL.COM",
+		"login_id": "MATTERMOST account",
+		"password": "PASSWORD",
+		"scheme": "https",
+		"port": 443,
+		"basepath": "/api/v4",
+		"verify": false, 
+		"mfa_token": "YourMFAToken"
+	},
+	"spotify": {
+		"client_id": "client id",
+		"client_secret": "client secret"
+	}
+}
