@@ -1,5 +1,7 @@
 import re
 import json
+import random
+import datetime
 import requests
 
 from mattermostdriver import Driver
@@ -92,6 +94,43 @@ class HelpCommand(Command):
                 answer += '- ' + help_message + "\n"
         return answer
 
+class RandomSong(Command):
+
+    def __init__(self, songs, theme, random_daily=False):
+        self.songs = songs
+        self.theme = theme
+        self.random_daily = random_daily
+        self.current_date = None
+        self.current_choice = None
+
+    def match(self, message):
+        return message.lower() == f'@liumbot {self.theme}'.lower()
+
+    def get_answer(self, message):
+        if self.random_daily:
+            now = datetime.datetime.today().strftime("%d-%m-%Y")
+            if self.current_date != now:
+                self.current_date = now
+                self.current_choice = random.choice(self.songs)
+            random_track = self.current_choice
+        else:
+            random_track = random.choice(self.songs)
+        spotify = SpotifyCommand.get_spotify(random_track)
+        url = f"https://open.spotify.com/track/{random_track}"
+
+        if spotify is None:
+            return
+        answer = f"![{spotify['title']}]({spotify['image']} =100)\n"
+        answer += f"[**{spotify['title']}**]({url})\n"
+        answer += f"{spotify['description']}"
+        return answer
+
+    def get_help(self):
+        more = ''
+        if self.random_daily:
+            more = ' (daily)'
+        return f'`@liumbot {self.theme}`: get a random song from {self.theme}' + more
+
 class SpotifyCommand(Command):
 
     SPOTIFY_TRACK_MATCHER = re.compile(r"https://open\.spotify\.com/track/(?P<track_id>[^\s\?]+)")
@@ -100,6 +139,9 @@ class SpotifyCommand(Command):
         return "https://open.spotify.com/track/" in message
 
     def get_answer(self, message):
+        today = datetime.date.today()
+        if today.month == 12 and today.day == 25:
+            message = "https://open.spotify.com/track/0bYg9bo50gSsH3LtXe2SQn"
         track_id = SpotifyCommand.SPOTIFY_TRACK_MATCHER.search(message).group("track_id")
         url = f"https://open.spotify.com/track/{track_id}"
         spotify = SpotifyCommand.get_spotify(track_id)
@@ -136,7 +178,21 @@ commands = [
     TextCommand(source_text="pong", target_text="~~pong~~ping"),
     TextCommand(source_text=":middle_finger:", target_text="Faites l'amour, pas la guerre... :peace_symbol:", exact=False),
     TextCommand(source_text="marco", target_text="polo"),
+    TextCommand(source_text="boom shack a lak", target_text="https://open.spotify.com/track/5rYJbmPYDaC4yJ8toRSrof"),
     SpotifyCommand(),
+    RandomSong(
+        songs=["0bYg9bo50gSsH3LtXe2SQn", "2FRnf9qhLbvw8fu4IBXx78", "5hslUAKq9I9CG2bAulFkHN", "2uFaJJtFpPDc5Pa95XzTvg", "09OojFvtrM9YRzRjnXqJjA", "1RMDXedcRno6rDBCbNHDJf", "07RmHXaYqBdUyfAESPZkRO", "4MXjNlvbzwCMWHrxlya9pW", "4SiAzqioAQcigeBzCQ3U2j", "3PIDciSFdrQxSQSihim3hN", "1rv46mRwDqMEhOBZ7vODg3", "0NSAlbl5xcKOu7BKDbVk7I", "3jKVI7aQfr11uhEOcOIwcZ", "6r2QqSbil8Din17Y51Scen", "2xGO2UjzxeVQSIkyg98vck", "5yNgdD8E6WruhULb4n2Con", "4PS1e8f2LvuTFgUs1Cn3ON", "26hUXfKoJYkAMK07nW2dzQ", "27RYrbL6S02LNVhDWVl38b", "65irrLqfCMRiO3p87P4C0D", "3B7FO3kJ5kv3mX7yiaB7sT", "5mZpq33J8jsDVQ42TmjizK", "5Q2P43CJra0uRAogjHyJDK", "67mgz7S5y7hnCE63YBjfO6", "1V0qqWBbIWt8hlAjxTZedR", "7xapw9Oy21WpfEcib2ErSA", "48N60kr2DFvTYfvZvTAqoj", "4c4LylLvTh91IhwQgSXPRc", "2pnPe4pJtq7689i5ydzvJJ", "1SV1fxF65n9NhRHp3KlBuu", "7aKOrnegxN1BRuFERyz550", "27qAMKrDdKEs8HDXcvR24R", "4EOJWkvkVDpkZrhC8iTDsI", "3aHDEjyb4ZMpdj0G2xDGUM", "3WrG9BpOPQWUus3FjA1Tny", "280jC1bGyGtZq3VXsSk6hH", "6pPLhUHaxNy37eIUNYu5JL", "3sDdyBHQ60Cs1opmIyRvhp", "3M0zQnFBi3FTNGhkMGikGI", "2X5noCM9Klrm4zXfyyPdRN"],
+        theme='NOËL',
+        random_daily=True
+    ),
+    RandomSong(
+        songs=["4CLPZNwUITqYekTvyPeive", "2Ras8TV02rraE9JCkEVfwB", "3w4U9vZldQ5kgEi0N4Unc6", "6TWT2UFCPoi0scf55M39ls", "2MSFiP3ntDhHGEz5Fy4Gqc", "5wbXbE6URBfTPZecZuSYT8", "4SWkhL9w3GyvbkKUbovvFg", "3y1bCmGGMVnthn6r2u6Pew", "5AckvDuR4Ga5KOP6M0gnFH", "2igdTZeMTdtINAH41WJaix", "5UUS6mVUeEaN8dsrxycxdC", "7C0cO16ZSSmJPyYmSruQgt", "6QHArSuqT0o4CTB15NEbNK", "7vs3WkE9wB9G6hxNtKpmXd"],
+        theme='Théo Mariotte',
+    ),
+    RandomSong(
+        songs=["6RECDe6BIdnADiavD9kvqk", "5JXbFbY9oJFI5GgfXKCTAo", "5mPxk22dPoO7DrywL6xT3n", "4cYFep5SECqb4EsSkF82e0", "64gCM9yZv2jpNflclKUnXu", "54OBgO0Xwu20Jak9TMXbR7", "5qcHNtNeQWSEVTeIwBLwss", "4qRHwcsUkrYFZe2fOlcrAR", "3nXpsXtbeZkyu1iuOgbeQK", "1tol8fVsDQasYsy5pb8raT", "6SS9OF7qgf1EK2mr1Vmvbs", "1AHIVgpK90TTvBe1HM49hM", "5LppNo9DpHXcbJzIuo9VTo", "5aYwgXdg6FzTJ1EHLmFW5r", "2LtBLSQsCLca2flQpDHhOA", "01xA7P2ryJ0ohiFSWZFChL", "2itXGPskhSohSd7e67uKhv", "0x530BpHWXCqpqU5P4gXDr", "5VgQkhPoKcdJqggCJd1MsC", "2kOuJlOIup1upp9NtlvPnZ", "6tdWV3xGZD1yvRgwcZ72uV", "1ZK8WJqkD1XhEYI1AlkMHG", "3z613YwTlIIDulcfPRp6GE"],
+        theme='Bretagne'
+    ),
     TextCommand(source_text="@liumbot bzh", target_text="https://t.ly/282J"),
 ]
 commands.append(HelpCommand(commands))
