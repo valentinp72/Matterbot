@@ -3,6 +3,12 @@ import json
 import random
 import datetime
 import requests
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--spotify_client_id', type=str)
+parser.add_argument('--spotify_client_secret', type=str)
+args = parser.parse_args()
 
 from mattermostdriver import Driver
 import spotipy
@@ -16,7 +22,11 @@ mattermost.login()
 
 ME = mattermost.users.get_user(user_id='me')['id']
 
-auth_manager = SpotifyClientCredentials(**config['spotify'])
+if args.spotify_client_id is not None and args.spotify_client_secret is not None:
+    auth_manager = SpotifyClientCredentials(client_id=args.spotify_client_id, client_secret=args.spotify_client_secret)
+else:
+    auth_manager = SpotifyClientCredentials(**config['spotify'])
+
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
 def answer_to_post(text, post):
