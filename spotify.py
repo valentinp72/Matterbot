@@ -1,4 +1,5 @@
 import re
+import time
 import json
 import random
 import datetime
@@ -237,4 +238,7 @@ async def event_handler(message):
             if answer is not None:
                 answer_to_post(text=answer, post=post)
 
-mattermost.init_websocket(event_handler)
+while True:
+    mattermost.init_websocket(event_handler)
+    print("mattermost not responding. Retrying in 30s...")
+    time.sleep(30)
